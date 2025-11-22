@@ -259,6 +259,10 @@ OFFICIAL_MODEL_NAMES = [
     "google/gemma-3-270m-it",
     "google/gemma-3-1b-pt",
     "google/gemma-3-1b-it",
+    "google/gemma-3-4b-pt",
+    "google/gemma-3-4b-it",
+    "google/medgemma-4b-pt",
+    "google/medgemma-4b-it",
     "01-ai/Yi-6B",
     "01-ai/Yi-34B",
     "01-ai/Yi-6B-Chat",
@@ -719,6 +723,10 @@ MODEL_ALIASES = {
     "google/gemma-3-270m-it": ["gemma-3-270m-it"],
     "google/gemma-3-1b-pt": ["gemma-3-1b-pt"],
     "google/gemma-3-1b-it": ["gemma-3-1b-it"],
+    "google/gemma-3-4b-pt": ["gemma-3-4b-pt"],
+    "google/gemma-3-4b-it": ["gemma-3-4b-it"],
+    "google/medgemma-4b-pt": ["medgemma-4b-pt"],
+    "google/medgemma-4b-it": ["medgemma-4b-it"],
     "01-ai/Yi-6B": ["yi-6b", "Yi-6B"],
     "01-ai/Yi-34B": ["yi-34b", "Yi-34B"],
     "01-ai/Yi-6B-Chat": ["yi-6b-chat", "Yi-6B-Chat"],
@@ -798,8 +806,13 @@ def convert_hf_model_config(model_name: str, **kwargs: Any):
     # Load HuggingFace model config
     if "llama" in official_model_name.lower():
         architecture = "LlamaForCausalLM"
-    elif "gemma-3" in official_model_name.lower():
-        architecture = "Gemma3ForCausalLM"
+    elif "gemma-3" in official_model_name.lower() or "medgemma" in official_model_name.lower():
+        # Gemma 3: 270M and 1B are text-only (CausalLM), 4B+ are multimodal (ConditionalGeneration)
+        if "270m" in official_model_name.lower() or "1b" in official_model_name.lower():
+            architecture = "Gemma3ForCausalLM"
+        else:
+            # 4B, 12B, 27B and medgemma are multimodal
+            architecture = "Gemma3ForConditionalGeneration"
     elif "gemma-2" in official_model_name.lower():
         architecture = "Gemma2ForCausalLM"
     elif "gemma" in official_model_name.lower():
@@ -1474,7 +1487,7 @@ def convert_hf_model_config(model_name: str, **kwargs: Any):
         # Architecture for Gemma-3 1b-pt and Gemma-3 1b-it models
         cfg_dict = {
             "d_model": 1152,
-            "d_head": 256,  # Fixed for all Gemma models, not 288
+            "d_head": 256,
             "n_heads": 4,
             "d_mlp": 6912,
             "n_layers": 26,
@@ -1488,6 +1501,29 @@ def convert_hf_model_config(model_name: str, **kwargs: Any):
             "positional_embedding_type": "rotary",
             "use_attn_scale": True,
             "n_key_value_heads": 1,
+            "gated_mlp": True,
+            "final_rms": True,
+            "use_normalization_before_and_after": True,
+            "use_qk_norm": True,
+        }
+    elif official_model_name.startswith("google/gemma-3-4b") or official_model_name.startswith("google/medgemma-4b"):
+        # Architecture for Gemma-3 4b and MedGemma 4b models (multimodal, text-only extraction)
+        cfg_dict = {
+            "d_model": 2560,
+            "d_head": 256,  # Fixed for all Gemma models
+            "n_heads": 8,
+            "d_mlp": 10240,
+            "n_layers": 34,
+            "n_ctx": 131072,
+            "eps": 1e-06,
+            "d_vocab": 262208,
+            "act_fn": "gelu_pytorch_tanh",
+            "initializer_range": 0.02,
+            "normalization_type": "RMS",
+            "rotary_base": 1000000,
+            "positional_embedding_type": "rotary",
+            "use_attn_scale": True,
+            "n_key_value_heads": 4,
             "gated_mlp": True,
             "final_rms": True,
             "use_normalization_before_and_after": True,
@@ -1557,7 +1593,7 @@ def convert_hf_model_config(model_name: str, **kwargs: Any):
             "n_key_value_heads": 4,
             "window_size": 4096,
             "use_local_attn": True,
-            "attn_types": ["global", "local"] * 21,
+            "attn_types": ["global", "local"] * 21,   # Alternate global and local attn
             "attn_scores_soft_cap": 50.0,
             "output_logits_soft_cap": 30.0,
             "gated_mlp": True,
@@ -1914,6 +1950,8 @@ def get_pretrained_state_dict(
     if "torch_dtype" in kwargs:
         dtype = kwargs["torch_dtype"]
         del kwargs["torch_dtype"]
+    if "hf_token" in kwargs:
+        del kwargs["hf_token"]
     if Path(official_model_name).exists():
         official_model_name = str(Path(official_model_name).resolve())
         logging.info(f"Loading model from local path {official_model_name}")
@@ -1991,6 +2029,15 @@ def get_pretrained_state_dict(
                     token=huggingface_token if len(huggingface_token) > 0 else None,
                     **kwargs,
                 )
+            elif cfg.original_architecture == "Gemma3ForConditionalGeneration":
+                # Multimodal Gemma 3 models - use AutoModel
+                from transformers import AutoModel
+                hf_model = AutoModel.from_pretrained(
+                    official_model_name,
+                    torch_dtype=dtype,
+                    token=huggingface_token if len(huggingface_token) > 0 else None,
+                    **kwargs,
+                )
             else:
                 hf_model = AutoModelForCausalLM.from_pretrained(
                     official_model_name,
@@ -2043,6 +2090,9 @@ def get_pretrained_state_dict(
         elif cfg.original_architecture == "Gemma2ForCausalLM":
             state_dict = convert_gemma_weights(hf_model, cfg)
         elif cfg.original_architecture == "Gemma3ForCausalLM":
+            state_dict = convert_gemma_weights(hf_model, cfg)
+        elif cfg.original_architecture == "Gemma3ForConditionalGeneration":
+            # Multimodal model - extract text-only weights
             state_dict = convert_gemma_weights(hf_model, cfg)
         else:
             raise ValueError(
