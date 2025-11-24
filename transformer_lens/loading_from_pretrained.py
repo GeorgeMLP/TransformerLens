@@ -1498,6 +1498,9 @@ def convert_hf_model_config(model_name: str, **kwargs: Any):
             "final_rms": True,
             "use_normalization_before_and_after": True,
             "use_qk_norm": True,
+            "window_size": 512,
+            "use_local_attn": True,
+            "attn_types": ["local", "local", "local", "local", "local", "global", "local", "local", "local", "local", "local", "global", "local", "local", "local", "local", "local", "global"],
         }
     elif official_model_name.startswith("google/gemma-3-1b"):
         # Architecture for Gemma-3 1b-pt and Gemma-3 1b-it models
@@ -1521,6 +1524,9 @@ def convert_hf_model_config(model_name: str, **kwargs: Any):
             "final_rms": True,
             "use_normalization_before_and_after": True,
             "use_qk_norm": True,
+            "window_size": 512,
+            "use_local_attn": True,
+            "attn_types": ["local", "local", "local", "local", "local", "global", "local", "local", "local", "local", "local", "global", "local", "local", "local", "local", "local", "global", "local", "local", "local", "local", "local", "global", "local", "local"],
         }
     elif official_model_name.startswith("google/gemma-3-4b") or official_model_name.startswith("google/medgemma-4b"):
         # Architecture for Gemma-3 4b and MedGemma 4b models (multimodal, text-only extraction)
@@ -1544,6 +1550,9 @@ def convert_hf_model_config(model_name: str, **kwargs: Any):
             "final_rms": True,
             "use_normalization_before_and_after": True,
             "use_qk_norm": True,
+            "window_size": 1024,
+            "use_local_attn": True,
+            "attn_types": ["local", "local", "local", "local", "local", "global", "local", "local", "local", "local", "local", "global", "local", "local", "local", "local", "local", "global", "local", "local", "local", "local", "local", "global", "local", "local", "local", "local", "local", "global", "local", "local", "local", "local"],
         }
     elif official_model_name.startswith("google/gemma-3-12b"):
         # Architecture for Gemma-3 12b models (multimodal, text-only extraction)
@@ -1567,6 +1576,9 @@ def convert_hf_model_config(model_name: str, **kwargs: Any):
             "final_rms": True,
             "use_normalization_before_and_after": True,
             "use_qk_norm": True,
+            "window_size": 1024,
+            "use_local_attn": True,
+            "attn_types": ["local", "local", "local", "local", "local", "global", "local", "local", "local", "local", "local", "global", "local", "local", "local", "local", "local", "global", "local", "local", "local", "local", "local", "global", "local", "local", "local", "local", "local", "global", "local", "local", "local", "local", "local", "global", "local", "local", "local", "local", "local", "global", "local", "local", "local", "local", "local", "global"],
         }
     elif official_model_name.startswith("google/gemma-3-27b") or official_model_name.startswith("google/medgemma-27b"):
         # Architecture for Gemma-3 27b and MedGemma 27b models (multimodal/text-only extraction)
@@ -1591,6 +1603,9 @@ def convert_hf_model_config(model_name: str, **kwargs: Any):
             "final_rms": True,
             "use_normalization_before_and_after": True,
             "use_qk_norm": True,
+            "window_size": 1024,
+            "use_local_attn": True,
+            "attn_types": ["local", "local", "local", "local", "local", "global", "local", "local", "local", "local", "local", "global", "local", "local", "local", "local", "local", "global", "local", "local", "local", "local", "local", "global", "local", "local", "local", "local", "local", "global", "local", "local", "local", "local", "local", "global", "local", "local", "local", "local", "local", "global", "local", "local", "local", "local", "local", "global", "local", "local", "local", "local", "local", "global", "local", "local", "local", "local", "local", "global", "local", "local"],
         }
     elif official_model_name.startswith("google/gemma-2b"):
         # Architecture for Gemma 2b and Gemma 2b Instruct models
