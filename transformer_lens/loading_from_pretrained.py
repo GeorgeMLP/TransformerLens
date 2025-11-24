@@ -261,8 +261,14 @@ OFFICIAL_MODEL_NAMES = [
     "google/gemma-3-1b-it",
     "google/gemma-3-4b-pt",
     "google/gemma-3-4b-it",
+    "google/gemma-3-12b-pt",
+    "google/gemma-3-12b-it",
+    "google/gemma-3-27b-pt",
+    "google/gemma-3-27b-it",
     "google/medgemma-4b-pt",
     "google/medgemma-4b-it",
+    "google/medgemma-27b-it",
+    "google/medgemma-27b-text-it",
     "01-ai/Yi-6B",
     "01-ai/Yi-34B",
     "01-ai/Yi-6B-Chat",
@@ -725,8 +731,14 @@ MODEL_ALIASES = {
     "google/gemma-3-1b-it": ["gemma-3-1b-it"],
     "google/gemma-3-4b-pt": ["gemma-3-4b-pt"],
     "google/gemma-3-4b-it": ["gemma-3-4b-it"],
+    "google/gemma-3-12b-pt": ["gemma-3-12b-pt"],
+    "google/gemma-3-12b-it": ["gemma-3-12b-it"],
+    "google/gemma-3-27b-pt": ["gemma-3-27b-pt"],
+    "google/gemma-3-27b-it": ["gemma-3-27b-it"],
     "google/medgemma-4b-pt": ["medgemma-4b-pt"],
     "google/medgemma-4b-it": ["medgemma-4b-it"],
+    "google/medgemma-27b-it": ["medgemma-27b-it"],
+    "google/medgemma-27b-text-it": ["medgemma-27b-text-it"],
     "01-ai/Yi-6B": ["yi-6b", "Yi-6B"],
     "01-ai/Yi-34B": ["yi-34b", "Yi-34B"],
     "01-ai/Yi-6B-Chat": ["yi-6b-chat", "Yi-6B-Chat"],
@@ -808,7 +820,11 @@ def convert_hf_model_config(model_name: str, **kwargs: Any):
         architecture = "LlamaForCausalLM"
     elif "gemma-3" in official_model_name.lower() or "medgemma" in official_model_name.lower():
         # Gemma 3: 270M and 1B are text-only (CausalLM), 4B+ are multimodal (ConditionalGeneration)
+        # Exception: medgemma-27b-text-it is text-only
         if "270m" in official_model_name.lower() or "1b" in official_model_name.lower():
+            architecture = "Gemma3ForCausalLM"
+        elif "medgemma-27b-text" in official_model_name.lower():
+            # medgemma-27b-text-it is text-only variant
             architecture = "Gemma3ForCausalLM"
         else:
             # 4B, 12B, 27B and medgemma are multimodal
@@ -1510,7 +1526,7 @@ def convert_hf_model_config(model_name: str, **kwargs: Any):
         # Architecture for Gemma-3 4b and MedGemma 4b models (multimodal, text-only extraction)
         cfg_dict = {
             "d_model": 2560,
-            "d_head": 256,  # Fixed for all Gemma models
+            "d_head": 256,
             "n_heads": 8,
             "d_mlp": 10240,
             "n_layers": 34,
@@ -1524,6 +1540,53 @@ def convert_hf_model_config(model_name: str, **kwargs: Any):
             "positional_embedding_type": "rotary",
             "use_attn_scale": True,
             "n_key_value_heads": 4,
+            "gated_mlp": True,
+            "final_rms": True,
+            "use_normalization_before_and_after": True,
+            "use_qk_norm": True,
+        }
+    elif official_model_name.startswith("google/gemma-3-12b"):
+        # Architecture for Gemma-3 12b models (multimodal, text-only extraction)
+        cfg_dict = {
+            "d_model": 3840,
+            "d_head": 256,
+            "n_heads": 16,
+            "d_mlp": 15360,
+            "n_layers": 48,
+            "n_ctx": 8192,  # Safe default (model supports up to 128K). Override: cfg_kwargs={"n_ctx": 131072}
+            "eps": 1e-06,
+            "d_vocab": 262208,
+            "act_fn": "gelu_pytorch_tanh",
+            "initializer_range": 0.02,
+            "normalization_type": "RMS",
+            "rotary_base": 1000000,
+            "positional_embedding_type": "rotary",
+            "use_attn_scale": True,
+            "n_key_value_heads": 8,
+            "gated_mlp": True,
+            "final_rms": True,
+            "use_normalization_before_and_after": True,
+            "use_qk_norm": True,
+        }
+    elif official_model_name.startswith("google/gemma-3-27b") or official_model_name.startswith("google/medgemma-27b"):
+        # Architecture for Gemma-3 27b and MedGemma 27b models (multimodal/text-only extraction)
+        # Note: medgemma-27b-text-it uses Gemma3ForCausalLM (text-only), others use Gemma3ForConditionalGeneration
+        cfg_dict = {
+            "d_model": 5376,
+            "d_head": 256,
+            "n_heads": 32,
+            "d_mlp": 21504,
+            "n_layers": 62,
+            "n_ctx": 8192,  # Safe default (model supports up to 128K). Override: cfg_kwargs={"n_ctx": 131072}
+            "eps": 1e-06,
+            "d_vocab": 262144 if official_model_name == "google/medgemma-27b-text-it" else 262208,  # text-only variant uses 262144
+            "act_fn": "gelu_pytorch_tanh",
+            "initializer_range": 0.02,
+            "normalization_type": "RMS",
+            "rotary_base": 1000000,
+            "positional_embedding_type": "rotary",
+            "use_attn_scale": True,
+            "n_key_value_heads": 16,
             "gated_mlp": True,
             "final_rms": True,
             "use_normalization_before_and_after": True,
