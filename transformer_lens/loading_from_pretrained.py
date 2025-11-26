@@ -1589,7 +1589,7 @@ def convert_hf_model_config(model_name: str, **kwargs: Any):
         # Note: medgemma-27b-text-it uses Gemma3ForCausalLM (text-only), others use Gemma3ForConditionalGeneration
         cfg_dict = {
             "d_model": 5376,
-            "d_head": 256,
+            "d_head": 128,
             "n_heads": 32,
             "d_mlp": 21504,
             "n_layers": 62,
