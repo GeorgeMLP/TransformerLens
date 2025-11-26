@@ -185,10 +185,20 @@ jobs:
         run: |
           poetry check --lock
           poetry install --sync --with dev,jupyter
+      - name: Force correct huggingface-hub version
+        run: |
+          # Force huggingface-hub to match lock file version (workaround for transitive dependency issues)
+          poetry run pip install "huggingface-hub>=0.23.2,<1.0" --force-reinstall --no-deps
       - name: Verify huggingface-hub version
         run: |
           poetry run pip show huggingface-hub | grep Version
-          poetry run python -c "import huggingface_hub; print(f'huggingface-hub version: {huggingface_hub.__version__}')"
+          HF_VERSION=$(poetry run python -c "import huggingface_hub; print(huggingface_hub.__version__)")
+          echo "huggingface-hub version: $HF_VERSION"
+          # Fail if version is 1.x or higher
+          if [[ "$HF_VERSION" == 1.* ]]; then
+            echo "ERROR: huggingface-hub version must be <1.0 for transformers compatibility"
+            exit 1
+          fi
       - name: Install pandoc
         uses: awalsh128/cache-apt-pkgs-action@latest
         with:
