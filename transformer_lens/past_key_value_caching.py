@@ -4,6 +4,7 @@ This module contains the HookedTransformerKeyValueCache and HookedTransformerKey
 classes, which are used to store past keys and values for the Transformer. This is important for
 generating text - we can cache a lot of past computation and avoid repeating ourselves!
 """
+
 from dataclasses import dataclass
 from typing import List, Union
 
@@ -42,12 +43,12 @@ class HookedTransformerKeyValueCacheEntry:
         new_keys: Float[torch.Tensor, "batch new_tokens n_heads d_head"],
         new_values: Float[torch.Tensor, "batch new_tokens n_heads d_head"],
     ):
-        updated_keys: Float[
-            torch.Tensor, "batch pos_so_far_plus_new_tokens n_heads d_head"
-        ] = torch.cat([self.past_keys, new_keys], dim=1)
-        updated_values: Float[
-            torch.Tensor, "batch pos_so_far_plus_new_tokens n_heads d_head"
-        ] = torch.cat([self.past_values, new_values], dim=1)
+        updated_keys: Float[torch.Tensor, "batch pos_so_far_plus_new_tokens n_heads d_head"] = (
+            torch.cat([self.past_keys, new_keys], dim=1)
+        )
+        updated_values: Float[torch.Tensor, "batch pos_so_far_plus_new_tokens n_heads d_head"] = (
+            torch.cat([self.past_values, new_values], dim=1)
+        )
         if not self.frozen:
             self.past_keys = updated_keys
             self.past_values = updated_values

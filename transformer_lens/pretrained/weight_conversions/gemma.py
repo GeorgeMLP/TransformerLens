@@ -12,15 +12,15 @@ def convert_gemma_weights(gemma, cfg: HookedTransformerConfig):
 
     # Check if this is a multimodal model (Gemma3ForConditionalGeneration)
     # Multimodal models have language_model attribute, text-only models don't
-    is_multimodal = hasattr(gemma, 'language_model')
-    
+    is_multimodal = hasattr(gemma, "language_model")
+
     # Get the actual model
     # For multimodal: gemma.language_model.model is Gemma3TextModel which has layers/embed_tokens
     # For text-only: gemma has .model which contains layers/embed_tokens
     if is_multimodal:
         # Multimodal structure: gemma.language_model.model contains the text transformer
         # We skip gemma.vision_tower entirely to save memory
-        if hasattr(gemma.language_model, 'model'):
+        if hasattr(gemma.language_model, "model"):
             base_model = gemma.language_model.model
         else:
             # Fallback if structure is different
@@ -63,14 +63,12 @@ def convert_gemma_weights(gemma, cfg: HookedTransformerConfig):
 
         # Load q_norm and k_norm if they exist (Gemma 3)
         if cfg.use_qk_norm:
-            state_dict[f"blocks.{l}.attn.q_norm.w"] = base_model.layers[
-                l
-            ].self_attn.q_norm.weight
-            state_dict[f"blocks.{l}.attn.k_norm.w"] = base_model.layers[
-                l
-            ].self_attn.k_norm.weight
+            state_dict[f"blocks.{l}.attn.q_norm.w"] = base_model.layers[l].self_attn.q_norm.weight
+            state_dict[f"blocks.{l}.attn.k_norm.w"] = base_model.layers[l].self_attn.k_norm.weight
 
-        state_dict[f"blocks.{l}.attn.b_Q"] = torch.zeros(cfg.n_heads, cfg.d_head, dtype=cfg.dtype, device=W_Q.device)
+        state_dict[f"blocks.{l}.attn.b_Q"] = torch.zeros(
+            cfg.n_heads, cfg.d_head, dtype=cfg.dtype, device=W_Q.device
+        )
         state_dict[f"blocks.{l}.attn._b_K"] = torch.zeros(
             cfg.n_key_value_heads, cfg.d_head, dtype=cfg.dtype, device=W_K.device
         )
@@ -82,7 +80,9 @@ def convert_gemma_weights(gemma, cfg: HookedTransformerConfig):
         W_O = einops.rearrange(W_O, "m (n h)->n h m", n=cfg.n_heads)
         state_dict[f"blocks.{l}.attn.W_O"] = W_O
 
-        state_dict[f"blocks.{l}.attn.b_O"] = torch.zeros(cfg.d_model, dtype=cfg.dtype, device=W_O.device)
+        state_dict[f"blocks.{l}.attn.b_O"] = torch.zeros(
+            cfg.d_model, dtype=cfg.dtype, device=W_O.device
+        )
 
         # GemmaRMSNorm adds 1 to weights before multiplying by input, keep RMS calcs in float32
         if not cfg.use_normalization_before_and_after:
@@ -107,10 +107,14 @@ def convert_gemma_weights(gemma, cfg: HookedTransformerConfig):
 
         state_dict[f"blocks.{l}.mlp.W_in"] = base_model.layers[l].mlp.up_proj.weight.T
         state_dict[f"blocks.{l}.mlp.W_gate"] = base_model.layers[l].mlp.gate_proj.weight.T
-        state_dict[f"blocks.{l}.mlp.b_in"] = torch.zeros(cfg.d_mlp, dtype=cfg.dtype, device=base_model.layers[l].mlp.up_proj.weight.device)
+        state_dict[f"blocks.{l}.mlp.b_in"] = torch.zeros(
+            cfg.d_mlp, dtype=cfg.dtype, device=base_model.layers[l].mlp.up_proj.weight.device
+        )
 
         state_dict[f"blocks.{l}.mlp.W_out"] = base_model.layers[l].mlp.down_proj.weight.T
-        state_dict[f"blocks.{l}.mlp.b_out"] = torch.zeros(cfg.d_model, dtype=cfg.dtype, device=base_model.layers[l].mlp.down_proj.weight.device)
+        state_dict[f"blocks.{l}.mlp.b_out"] = torch.zeros(
+            cfg.d_model, dtype=cfg.dtype, device=base_model.layers[l].mlp.down_proj.weight.device
+        )
 
     # GemmaRMSNorm adds 1 to weights before multiplying by input, keep RMS calcs in float32
     state_dict["ln_final.w"] = base_model.norm.weight.float() + torch.ones_like(
@@ -118,7 +122,7 @@ def convert_gemma_weights(gemma, cfg: HookedTransformerConfig):
     )
 
     # For multimodal models, lm_head might not exist or be tied to embeddings
-    if hasattr(gemma, 'lm_head'):
+    if hasattr(gemma, "lm_head"):
         state_dict["unembed.W_U"] = gemma.lm_head.weight.T
         unembed_device = gemma.lm_head.weight.device
     else:

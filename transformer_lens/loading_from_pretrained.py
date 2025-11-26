@@ -1393,11 +1393,13 @@ def convert_hf_model_config(model_name: str, **kwargs: Any):
     elif architecture == "Qwen3ForCausalLM":
         cfg_dict = {
             "d_model": hf_config.hidden_size,
-            "d_head": hf_config.head_dim
-            if hasattr(hf_config, "head_dim")
-            and hf_config.head_dim is not None
-            and hf_config.head_dim > 0
-            else hf_config.hidden_size // hf_config.num_attention_heads,
+            "d_head": (
+                hf_config.head_dim
+                if hasattr(hf_config, "head_dim")
+                and hf_config.head_dim is not None
+                and hf_config.head_dim > 0
+                else hf_config.hidden_size // hf_config.num_attention_heads
+            ),
             "n_heads": hf_config.num_attention_heads,
             "n_key_value_heads": (
                 hf_config.num_key_value_heads
@@ -1416,9 +1418,11 @@ def convert_hf_model_config(model_name: str, **kwargs: Any):
             "positional_embedding_type": "rotary",
             "rotary_base": int(hf_config.rope_theta),
             "rotary_adjacent_pairs": False,
-            "rotary_dim": hf_config.head_dim
-            if hasattr(hf_config, "head_dim") and hf_config.head_dim > 0
-            else hf_config.hidden_size // hf_config.num_attention_heads,
+            "rotary_dim": (
+                hf_config.head_dim
+                if hasattr(hf_config, "head_dim") and hf_config.head_dim > 0
+                else hf_config.hidden_size // hf_config.num_attention_heads
+            ),
             "tokenizer_prepends_bos": True,
             "final_rms": True,
             "gated_mlp": True,
@@ -1501,7 +1505,26 @@ def convert_hf_model_config(model_name: str, **kwargs: Any):
             "use_qk_norm": True,
             "window_size": 512,
             "use_local_attn": True,
-            "attn_types": ["local", "local", "local", "local", "local", "global", "local", "local", "local", "local", "local", "global", "local", "local", "local", "local", "local", "global"],
+            "attn_types": [
+                "local",
+                "local",
+                "local",
+                "local",
+                "local",
+                "global",
+                "local",
+                "local",
+                "local",
+                "local",
+                "local",
+                "global",
+                "local",
+                "local",
+                "local",
+                "local",
+                "local",
+                "global",
+            ],
         }
     elif official_model_name.startswith("google/gemma-3-1b"):
         # Architecture for Gemma-3 1b-pt and Gemma-3 1b-it models
@@ -1528,9 +1551,38 @@ def convert_hf_model_config(model_name: str, **kwargs: Any):
             "use_qk_norm": True,
             "window_size": 512,
             "use_local_attn": True,
-            "attn_types": ["local", "local", "local", "local", "local", "global", "local", "local", "local", "local", "local", "global", "local", "local", "local", "local", "local", "global", "local", "local", "local", "local", "local", "global", "local", "local"],
+            "attn_types": [
+                "local",
+                "local",
+                "local",
+                "local",
+                "local",
+                "global",
+                "local",
+                "local",
+                "local",
+                "local",
+                "local",
+                "global",
+                "local",
+                "local",
+                "local",
+                "local",
+                "local",
+                "global",
+                "local",
+                "local",
+                "local",
+                "local",
+                "local",
+                "global",
+                "local",
+                "local",
+            ],
         }
-    elif official_model_name.startswith("google/gemma-3-4b") or official_model_name.startswith("google/medgemma-4b"):
+    elif official_model_name.startswith("google/gemma-3-4b") or official_model_name.startswith(
+        "google/medgemma-4b"
+    ):
         # Architecture for Gemma-3 4b and MedGemma 4b models (multimodal, text-only extraction)
         cfg_dict = {
             "d_model": 2560,
@@ -1555,7 +1607,42 @@ def convert_hf_model_config(model_name: str, **kwargs: Any):
             "use_qk_norm": True,
             "window_size": 1024,
             "use_local_attn": True,
-            "attn_types": ["local", "local", "local", "local", "local", "global", "local", "local", "local", "local", "local", "global", "local", "local", "local", "local", "local", "global", "local", "local", "local", "local", "local", "global", "local", "local", "local", "local", "local", "global", "local", "local", "local", "local"],
+            "attn_types": [
+                "local",
+                "local",
+                "local",
+                "local",
+                "local",
+                "global",
+                "local",
+                "local",
+                "local",
+                "local",
+                "local",
+                "global",
+                "local",
+                "local",
+                "local",
+                "local",
+                "local",
+                "global",
+                "local",
+                "local",
+                "local",
+                "local",
+                "local",
+                "global",
+                "local",
+                "local",
+                "local",
+                "local",
+                "local",
+                "global",
+                "local",
+                "local",
+                "local",
+                "local",
+            ],
         }
     elif official_model_name.startswith("google/gemma-3-12b"):
         # Architecture for Gemma-3 12b models (multimodal, text-only extraction)
@@ -1582,9 +1669,60 @@ def convert_hf_model_config(model_name: str, **kwargs: Any):
             "use_qk_norm": True,
             "window_size": 1024,
             "use_local_attn": True,
-            "attn_types": ["local", "local", "local", "local", "local", "global", "local", "local", "local", "local", "local", "global", "local", "local", "local", "local", "local", "global", "local", "local", "local", "local", "local", "global", "local", "local", "local", "local", "local", "global", "local", "local", "local", "local", "local", "global", "local", "local", "local", "local", "local", "global", "local", "local", "local", "local", "local", "global"],
+            "attn_types": [
+                "local",
+                "local",
+                "local",
+                "local",
+                "local",
+                "global",
+                "local",
+                "local",
+                "local",
+                "local",
+                "local",
+                "global",
+                "local",
+                "local",
+                "local",
+                "local",
+                "local",
+                "global",
+                "local",
+                "local",
+                "local",
+                "local",
+                "local",
+                "global",
+                "local",
+                "local",
+                "local",
+                "local",
+                "local",
+                "global",
+                "local",
+                "local",
+                "local",
+                "local",
+                "local",
+                "global",
+                "local",
+                "local",
+                "local",
+                "local",
+                "local",
+                "global",
+                "local",
+                "local",
+                "local",
+                "local",
+                "local",
+                "global",
+            ],
         }
-    elif official_model_name.startswith("google/gemma-3-27b") or official_model_name.startswith("google/medgemma-27b"):
+    elif official_model_name.startswith("google/gemma-3-27b") or official_model_name.startswith(
+        "google/medgemma-27b"
+    ):
         # Architecture for Gemma-3 27b and MedGemma 27b models (multimodal/text-only extraction)
         # Note: medgemma-27b-text-it uses Gemma3ForCausalLM (text-only), others use Gemma3ForConditionalGeneration
         cfg_dict = {
@@ -1595,7 +1733,9 @@ def convert_hf_model_config(model_name: str, **kwargs: Any):
             "n_layers": 62,
             "n_ctx": 8192,  # Safe default (model supports up to 128K). Override: cfg_kwargs={"n_ctx": 131072}
             "eps": 1e-06,
-            "d_vocab": 262144 if official_model_name == "google/medgemma-27b-text-it" else 262208,  # text-only variant uses 262144
+            "d_vocab": (
+                262144 if official_model_name == "google/medgemma-27b-text-it" else 262208
+            ),  # text-only variant uses 262144
             "act_fn": "gelu_pytorch_tanh",
             "initializer_range": 0.02,
             "normalization_type": "RMS",
@@ -1610,7 +1750,70 @@ def convert_hf_model_config(model_name: str, **kwargs: Any):
             "use_qk_norm": True,
             "window_size": 1024,
             "use_local_attn": True,
-            "attn_types": ["local", "local", "local", "local", "local", "global", "local", "local", "local", "local", "local", "global", "local", "local", "local", "local", "local", "global", "local", "local", "local", "local", "local", "global", "local", "local", "local", "local", "local", "global", "local", "local", "local", "local", "local", "global", "local", "local", "local", "local", "local", "global", "local", "local", "local", "local", "local", "global", "local", "local", "local", "local", "local", "global", "local", "local", "local", "local", "local", "global", "local", "local"],
+            "attn_types": [
+                "local",
+                "local",
+                "local",
+                "local",
+                "local",
+                "global",
+                "local",
+                "local",
+                "local",
+                "local",
+                "local",
+                "global",
+                "local",
+                "local",
+                "local",
+                "local",
+                "local",
+                "global",
+                "local",
+                "local",
+                "local",
+                "local",
+                "local",
+                "global",
+                "local",
+                "local",
+                "local",
+                "local",
+                "local",
+                "global",
+                "local",
+                "local",
+                "local",
+                "local",
+                "local",
+                "global",
+                "local",
+                "local",
+                "local",
+                "local",
+                "local",
+                "global",
+                "local",
+                "local",
+                "local",
+                "local",
+                "local",
+                "global",
+                "local",
+                "local",
+                "local",
+                "local",
+                "local",
+                "global",
+                "local",
+                "local",
+                "local",
+                "local",
+                "local",
+                "global",
+                "local",
+                "local",
+            ],
         }
     elif official_model_name.startswith("google/gemma-2b"):
         # Architecture for Gemma 2b and Gemma 2b Instruct models
@@ -1676,7 +1879,7 @@ def convert_hf_model_config(model_name: str, **kwargs: Any):
             "n_key_value_heads": 4,
             "window_size": 4096,
             "use_local_attn": True,
-            "attn_types": ["global", "local"] * 21,   # Alternate global and local attn
+            "attn_types": ["global", "local"] * 21,  # Alternate global and local attn
             "attn_scores_soft_cap": 50.0,
             "output_logits_soft_cap": 30.0,
             "gated_mlp": True,
@@ -1952,7 +2155,7 @@ def get_pretrained_model_config(
             cfg_dict["rotary_base"] = hf_cfg.get("rope_theta", cfg_dict["rotary_base"])
     if first_n_layers is not None:
         cfg_dict["n_layers"] = first_n_layers
-    
+
     if n_ctx is not None:
         # User explicitly overrode the context length
         cfg_dict["n_ctx"] = n_ctx
@@ -2128,6 +2331,7 @@ def get_pretrained_state_dict(
             elif cfg.original_architecture == "Gemma3ForConditionalGeneration":
                 # Multimodal Gemma 3 models - use AutoModel
                 from transformers import AutoModel
+
                 hf_model = AutoModel.from_pretrained(
                     official_model_name,
                     torch_dtype=dtype,
