@@ -222,6 +222,15 @@ jobs:
         with:
           packages: pandoc
           version: 1.0
+      - name: Register Poetry venv as Jupyter kernel
+        run: |
+          poetry run python -m ipykernel install --user --name=poetry-env
+      - name: Final version check before pytest
+        run: |
+          echo "=== Environment check ==="
+          poetry run which python
+          poetry run pip show huggingface-hub | grep Version
+          poetry run python -c "import transformers; print('transformers OK')"
       - name: Check Notebook Output Consistency
         # Note: currently only checks notebooks we have specifically setup for this
         run: poetry run pytest --nbval-sanitize-with demos/doc_sanitize.cfg demos/${{ matrix.notebook }}.ipynb
