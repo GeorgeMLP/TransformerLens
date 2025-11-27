@@ -204,6 +204,18 @@ jobs:
         run: |
           poetry check --lock
           poetry install --sync --with dev,jupyter
+      - name: Verify huggingface-hub version after install
+        run: |
+          VERSION=$(poetry run python -c "import huggingface_hub; print(huggingface_hub.__version__)")
+          echo "huggingface-hub version after poetry install: $VERSION"
+      - name: Install pandoc
+        uses: awalsh128/cache-apt-pkgs-action@latest
+        with:
+          packages: pandoc
+          version: 1.0
+      - name: Register Poetry venv as Jupyter kernel
+        run: |
+          poetry run python -m ipykernel install --user --name=poetry-env
       - name: Ensure correct huggingface-hub version
         run: |
           # Force install the exact version from poetry.lock (0.33.0)
@@ -217,14 +229,6 @@ jobs:
             echo "ERROR: huggingface-hub version 1.x detected, but <1.0 is required!"
             exit 1
           fi
-      - name: Install pandoc
-        uses: awalsh128/cache-apt-pkgs-action@latest
-        with:
-          packages: pandoc
-          version: 1.0
-      - name: Register Poetry venv as Jupyter kernel
-        run: |
-          poetry run python -m ipykernel install --user --name=poetry-env
       - name: Final version check before pytest
         run: |
           echo "=== Environment check ==="
