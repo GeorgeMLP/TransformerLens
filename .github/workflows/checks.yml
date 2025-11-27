@@ -204,11 +204,11 @@ jobs:
         run: |
           poetry check --lock
           poetry install --sync --with dev,jupyter
-      - name: Force correct huggingface-hub version
+      - name: Ensure correct huggingface-hub version
         run: |
+          # Force install the exact version from poetry.lock (0.33.0)
           # transformers 4.46.3 requires huggingface-hub>=0.23.2,<1.0
-          poetry run pip uninstall -y huggingface-hub
-          poetry run pip install "huggingface-hub==0.26.2"
+          poetry run pip install --force-reinstall --no-deps huggingface-hub==0.33.0
       - name: Verify huggingface-hub version
         run: |
           VERSION=$(poetry run python -c "import huggingface_hub; print(huggingface_hub.__version__)")
