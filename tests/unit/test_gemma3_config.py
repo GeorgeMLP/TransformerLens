@@ -8,15 +8,15 @@ Tests cover:
 4. Per-layer RoPE base support
 """
 
-import pytest
 from unittest import mock
+
+import pytest
 
 from transformer_lens.HookedTransformerConfig import HookedTransformerConfig
 from transformer_lens.loading_from_pretrained import (
-    get_pretrained_model_config,
     OFFICIAL_MODEL_NAMES,
+    get_pretrained_model_config,
 )
-
 
 # ============================================================================
 # Test Data
