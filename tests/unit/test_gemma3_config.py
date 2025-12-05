@@ -95,25 +95,23 @@ GEMMA3_CONFIG_SPECS = {
 # Test: Model names in official list
 # ============================================================================
 
+
 class TestGemma3ModelRegistration:
     """Test that all Gemma 3 and MedGemma models are registered in OFFICIAL_MODEL_NAMES."""
 
     @pytest.mark.parametrize("model_name", GEMMA3_MODELS)
     def test_gemma3_models_in_official_list(self, model_name: str):
-        assert model_name in OFFICIAL_MODEL_NAMES, (
-            f"{model_name} should be in OFFICIAL_MODEL_NAMES"
-        )
+        assert model_name in OFFICIAL_MODEL_NAMES, f"{model_name} should be in OFFICIAL_MODEL_NAMES"
 
     @pytest.mark.parametrize("model_name", MEDGEMMA_MODELS)
     def test_medgemma_models_in_official_list(self, model_name: str):
-        assert model_name in OFFICIAL_MODEL_NAMES, (
-            f"{model_name} should be in OFFICIAL_MODEL_NAMES"
-        )
+        assert model_name in OFFICIAL_MODEL_NAMES, f"{model_name} should be in OFFICIAL_MODEL_NAMES"
 
 
 # ============================================================================
 # Test: Configuration generation
 # ============================================================================
+
 
 class TestGemma3ConfigGeneration:
     """Test that get_pretrained_model_config generates correct configs for Gemma 3."""
@@ -178,6 +176,7 @@ class TestGemma3ConfigGeneration:
 # ============================================================================
 # Test: Hybrid attention configuration
 # ============================================================================
+
 
 class TestGemma3HybridAttention:
     """Test hybrid local/global attention configuration (5:1 pattern)."""
@@ -246,6 +245,7 @@ class TestGemma3HybridAttention:
 # Test: Per-layer RoPE base
 # ============================================================================
 
+
 class TestGemma3PerLayerRoPE:
     """Test per-layer RoPE base configuration."""
 
@@ -280,6 +280,7 @@ class TestGemma3PerLayerRoPE:
 # Test: Q/K Normalization
 # ============================================================================
 
+
 class TestGemma3QKNorm:
     """Test Q/K normalization configuration."""
 
@@ -304,6 +305,7 @@ class TestGemma3QKNorm:
 # Test: Normalization before and after
 # ============================================================================
 
+
 class TestGemma3Normalization:
     """Test Gemma 2/3 style normalization (before and after blocks)."""
 
@@ -327,6 +329,7 @@ class TestGemma3Normalization:
 # ============================================================================
 # Test: Vocabulary size
 # ============================================================================
+
 
 class TestGemma3VocabSize:
     """Test vocabulary size configuration."""
@@ -370,6 +373,7 @@ class TestGemma3VocabSize:
 # Test: Default context length
 # ============================================================================
 
+
 class TestGemma3ContextLength:
     """Test default context length configuration."""
 
@@ -392,6 +396,7 @@ class TestGemma3ContextLength:
 # ============================================================================
 # Test: HookedTransformerConfig with rotary_base_local
 # ============================================================================
+
 
 class TestHookedTransformerConfigRotaryBaseLocal:
     """Test that HookedTransformerConfig supports rotary_base_local."""
